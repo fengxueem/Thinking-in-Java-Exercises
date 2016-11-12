@@ -10,7 +10,7 @@ public class TextFile extends ArrayList<String> {
   public static String read(String fileName) {
     StringBuilder sb = new StringBuilder();
     try {
-      BufferedReader in= new BufferedReader(new FileReader(
+      BufferedReader in = new BufferedReader(new FileReader(
         new File(fileName).getAbsoluteFile()));
       try {
         String s;
