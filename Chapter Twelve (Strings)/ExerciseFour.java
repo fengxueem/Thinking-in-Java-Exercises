@@ -34,7 +34,6 @@ class Receipt {
 
 
 public class ExerciseFour {
-  
   public static void main(String[] args){
     Receipt.main(args);    
   }  
