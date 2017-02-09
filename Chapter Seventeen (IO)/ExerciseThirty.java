@@ -1,0 +1,118 @@
+//: io/StoreCADState.java
+// Saving the state of a pretend CAD system.
+import java.io.*;
+import java.util.*;
+
+abstract class Shape implements Serializable {
+  public static final int RED = 1, BLUE = 2, GREEN = 3;
+  private int xPos, yPos, dimension;
+  private static Random rand = new Random(47);
+  private static int counter = 0;
+  public abstract void setColor(int newColor);
+  public abstract int getColor();
+  public Shape(int xVal, int yVal, int dim) {
+    xPos = xVal;
+    yPos = yVal;
+    dimension = dim;
+  }
+  public String toString() {
+    return getClass() +
+      "color[" + getColor() + "] xPos[" + xPos +
+      "] yPos[" + yPos + "] dim[" + dimension + "]\n";
+  }
+  public static Shape randomFactory() {
+    int xVal = rand.nextInt(100);
+    int yVal = rand.nextInt(100);
+    int dim = rand.nextInt(100);
+    switch(counter++ % 3) {
+      default:
+      case 0: return new Circle(xVal, yVal, dim);
+      case 1: return new Square(xVal, yVal, dim);
+      case 2: return new Line(xVal, yVal, dim);
+    }
+  }
+}
+
+class Circle extends Shape {
+  private static int color = RED;
+  // add serializeStaticState() and deserializeStaticState() for each shape
+  public static void
+  serializeStaticState(ObjectOutputStream os)
+  throws IOException { os.writeInt(color); }
+  public static void
+  deserializeStaticState(ObjectInputStream os)
+  throws IOException { color = os.readInt(); }
+  public Circle(int xVal, int yVal, int dim) {
+    super(xVal, yVal, dim);
+  }
+  public void setColor(int newColor) { color = newColor; }
+  public int getColor() { return color; }
+}
+
+class Square extends Shape {
+  private static int color;
+  // add serializeStaticState() and deserializeStaticState() for each shape
+  public static void
+  serializeStaticState(ObjectOutputStream os)
+  throws IOException { os.writeInt(color); }
+  public static void
+  deserializeStaticState(ObjectInputStream os)
+  throws IOException { color = os.readInt(); }
+  public Square(int xVal, int yVal, int dim) {
+    super(xVal, yVal, dim);
+    color = RED;
+  }
+  public void setColor(int newColor) { color = newColor; }
+  public int getColor() { return color; }
+}
+
+class Line extends Shape {
+  private static int color = RED;
+  public static void
+  serializeStaticState(ObjectOutputStream os)
+  throws IOException { os.writeInt(color); }
+  public static void
+  deserializeStaticState(ObjectInputStream os)
+  throws IOException { color = os.readInt(); }
+  public Line(int xVal, int yVal, int dim) {
+    super(xVal, yVal, dim);
+  }
+  public void setColor(int newColor) { color = newColor; }
+  public int getColor() { return color; }
+}
+
+class StoreCADState {
+  public static void main(String[] args) throws Exception {
+    List<Shape> shapes = new ArrayList<Shape>();
+    // Make some shapes:
+    for(int i = 0; i < 10; i++)
+      shapes.add(Shape.randomFactory());
+    // Set all the static colors to GREEN:
+    for(int i = 0; i < 10; i++)
+      ((Shape)shapes.get(i)).setColor(Shape.GREEN);
+    // Save the state vector:
+    ObjectOutputStream out = new ObjectOutputStream(
+      new FileOutputStream("CADState.out"));
+    Line.serializeStaticState(out);
+    Circle.serializeStaticState(out);
+    Square.serializeStaticState(out);
+    out.writeObject(shapes);
+    // Display the shapes:
+    System.out.println(shapes);
+  }
+}
+
+public class ExerciseThirty {
+  public static void main(String[] args) throws Exception {
+    StoreCADState.main(args);
+    // retrival
+    ObjectInputStream in = new ObjectInputStream(
+      new FileInputStream("CADState.out"));
+    // keep deserialization order the same as when storing them
+    Line.deserializeStaticState(in);
+    Circle.deserializeStaticState(in);
+    Square.deserializeStaticState(in);
+    List<Shape> shapes = (List<Shape>)in.readObject();
+    System.out.println(shapes);
+  }  
+}
